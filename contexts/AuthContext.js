@@ -15,7 +15,7 @@ export function AuthProvider({ children }) {
       return;
     }
     try {
-      const { user: u } = await api.auth.me();
+      const { user: u } = await api.users.me();
       setUser(u);
     } catch {
       localStorage.removeItem('token');
@@ -29,8 +29,8 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [loadUser]);
 
-  const login = async (email, password) => {
-    const { token, user: u } = await api.auth.login(email, password);
+  const login = async (email, password, captchaId, captchaCode) => {
+    const { token, user: u } = await api.auth.login(email, password, captchaId, captchaCode);
     localStorage.setItem('token', token);
     setUser(u);
     return u;

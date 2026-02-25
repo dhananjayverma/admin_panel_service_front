@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import ClientLayout from '../../components/ClientLayout';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import StatusBadge from '../../components/StatusBadge';
-import { api } from '../../lib/api';
-import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
+import ClientLayout from '../../../components/ClientLayout';
+import LoadingSpinner from '../../../components/LoadingSpinner';
+import StatusBadge from '../../../components/StatusBadge';
+import { api } from '../../../lib/api';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useToast } from '../../../contexts/ToastContext';
 
 export default function CampaignDetail() {
   const router = useRouter();
@@ -120,11 +120,11 @@ export default function CampaignDetail() {
   const handleGenerateAi = async () => {
     setGenerateAiLoading(true);
     try {
-      await new Promise((r) => setTimeout(r, 800));
-      toast.success('Generate FREE once per day. Use your daily quota to generate a message.');
-      setMessageBody((prev) => prev + (prev ? '\n\n' : '') + 'Hi {{name}}, we have a special offer for you. Reply YES to know more.');
+      const { messageBody: generated } = await api.ai.generateMessage('');
+      setMessageBody((prev) => prev + (prev ? '\n\n' : '') + (generated || 'Hi {{name}}, we have a special offer for you. Reply YES to know more.'));
+      toast.success('Message generated. Generate FREE once per day.');
     } catch (e) {
-      toast.error(e.message);
+      toast.error(e.message || 'Generate failed');
     } finally {
       setGenerateAiLoading(false);
     }

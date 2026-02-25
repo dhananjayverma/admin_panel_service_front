@@ -1,62 +1,217 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useAuth } from '../contexts/AuthContext';
+import { useState, useEffect } from 'react';
+import {
+  Menu,
+  LayoutDashboard,
+  Megaphone,
+  Send,
+  Image,
+  MousePointerClick,
+  MessageSquare,
+  Code,
+  MessageCircle,
+  FileText,
+  BarChart3,
+  CreditCard,
+  Users,
+  ClipboardList,
+  User,
+  LogOut,
+} from 'lucide-react';
+const BrandIcon = MessageCircle;
 
-const nav = [
-  { href: '/admin/dashboard', label: 'Dashboard' },
-  { href: '/admin/access', label: 'Access Management' },
-  { href: '/admin/numbers', label: 'Virtual Numbers' },
-  { href: '/admin/analytics', label: 'Analytics' },
-  { href: '/admin/settings', label: 'Platform Settings' },
-  { href: '/admin/profile', label: 'Profile' },
+const navSections = [
+  {
+    label: 'Campaigns',
+    icon: Megaphone,
+    children: [
+      { label: 'Campaign', href: '/admin/campaigns', icon: Send },
+      { label: 'DP Campaign', href: '/admin/dp-campaign', icon: Image },
+      { label: 'Button Campaign', href: '/admin/button-campaign', icon: MousePointerClick },
+      { label: 'Action Button', href: '/admin/action-button', icon: MousePointerClick },
+      { label: 'Button SMS', href: '/admin/button-sms', icon: MessageSquare },
+    ],
+  },
+  { label: 'API', href: '/admin/api', icon: Code },
+  { label: 'Chatbot', href: '/admin/chatbot', icon: MessageCircle },
+  {
+    label: 'Reports',
+    icon: FileText,
+    children: [
+      { label: 'WhatsApp Report', href: '/admin/reports/whatsapp', icon: MessageCircle },
+      { label: 'User Campaigns', href: '/admin/reports/campaigns', icon: BarChart3 },
+      { label: 'Credit History', href: '/admin/reports/credits', icon: CreditCard },
+    ],
+  },
+  {
+    label: 'Management',
+    icon: Users,
+    children: [
+      { label: 'Manage Users', href: '/admin/users', icon: Users },
+      { label: 'Credit Manage', href: '/admin/credits', icon: CreditCard },
+      { label: 'Demo Requests', href: '/admin/demo-requests', icon: ClipboardList },
+    ],
+  },
+  {
+    label: 'Account',
+    userSection: true,
+    icon: User,
+    children: [
+      { label: 'Profile', href: '/admin/profile', icon: User },
+      { label: 'Logout', href: '/admin/logout', isLogout: true, icon: LogOut },
+    ],
+  },
 ];
+
+function isActive(path, href) {
+  if (href === '/admin/dashboard') return path === '/admin/dashboard';
+  return path === href || path.startsWith(href + '/');
+}
+
+const iconSize = 18;
+
+function NavLink({ href, label, path, isLogout, logout, router, isHome, icon: Icon }) {
+  const active = isActive(path, href);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
+
+  const iconEl = Icon ? <Icon size={iconSize} strokeWidth={2} aria-hidden /> : null;
+
+  if (isLogout) {
+    return (
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="admin-nav-btn"
+      >
+        {iconEl}
+        {label}
+      </button>
+    );
+  }
+  if (isHome) {
+    return (
+      <Link
+        href={href}
+        className={`admin-nav-home ${active ? 'active' : ''}`}
+      >
+        <span className="admin-nav-home-icon" aria-hidden><LayoutDashboard size={iconSize} strokeWidth={2} /></span>
+        {label}
+      </Link>
+    );
+  }
+  return (
+    <Link
+      href={href}
+      className={`admin-nav-item ${active ? 'active' : ''}`}
+    >
+      {iconEl}
+      {label}
+    </Link>
+  );
+}
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
   const { user, logout } = useAuth();
   const path = (router.asPath || router.pathname || '').split('?')[0];
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const closeSidebar = () => setSidebarOpen(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setSidebarOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: '#f1f5f9' }}>
-      {/* Top bar */}
-      <header style={{ height: 56, background: '#0f172a', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 24px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontWeight: 700, fontSize: 18 }}>WhatsApp Bulk</span>
-          <span style={{ background: '#059669', fontSize: 11, padding: '2px 8px', borderRadius: 6, fontWeight: 600 }}>ADMIN</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <Link href="/admin/dashboard" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14 }}>Dashboard</Link>
-          <Link href="/admin/profile" style={{ color: '#94a3b8', textDecoration: 'none', fontSize: 14 }}>Profile</Link>
-          <span style={{ fontSize: 13, color: '#94a3b8' }}>{user?.email}</span>
-          <button type="button" onClick={() => { logout(); router.push('/login'); }} style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', fontSize: 13 }}>Logout</button>
+    <div className="admin-root">
+      <header className="admin-header">
+        <button
+          type="button"
+          onClick={() => setSidebarOpen((o) => !o)}
+          className="admin-hamburger"
+          aria-label="Toggle menu"
+        >
+          <Menu size={22} strokeWidth={2} />
+        </button>
+        <Link href="/admin/dashboard" className="admin-header-brand" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <BrandIcon size={22} strokeWidth={2} />
+          WhatsApp
+        </Link>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{user?.email}</span>
         </div>
       </header>
 
-      <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        <aside style={{ width: 260, minWidth: 260, background: '#fff', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', boxShadow: '1px 0 0 rgba(0,0,0,0.04)' }}>
-          <nav style={{ padding: 16, flex: 1 }}>
-            <div style={{ fontSize: 11, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 12, paddingLeft: 4 }}>Admin Panel</div>
-            {nav.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                style={{
-                  display: 'block',
-                  padding: '12px 14px',
-                  borderRadius: 8,
-                  marginBottom: 4,
-                  color: path === href ? '#059669' : '#475569',
-                  textDecoration: 'none',
-                  fontWeight: path === href ? 600 : 500,
-                  background: path === href ? '#ecfdf5' : 'transparent',
-                }}
-              >
-                {label}
-              </Link>
-            ))}
+      <div className="admin-banner">
+        Session Time Will Be From 9:30 AM to 6:00 PM. On Sunday It Will Be From 9:30 AM to 12 PM
+      </div>
+
+      <div
+        className={`admin-sidebar-overlay ${sidebarOpen ? 'open' : ''}`}
+        onClick={closeSidebar}
+        onKeyDown={(e) => e.key === 'Escape' && closeSidebar()}
+        role="button"
+        tabIndex={0}
+        aria-label="Close menu"
+      />
+
+      <div className={`admin-body`}>
+        <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+          <nav className="admin-nav" aria-label="Admin menu">
+            <NavLink href="/admin/dashboard" label="Dashboard" path={path} router={router} logout={logout} isHome />
+            {navSections.map((section) =>
+              section.children ? (
+                <div
+                  key={section.label}
+                  className={`admin-nav-section ${section.userSection ? 'admin-nav-section-user' : ''}`}
+                >
+                  <span className="admin-nav-section-title">
+                    {section.icon && (() => { const Icon = section.icon; return <Icon size={14} strokeWidth={2} style={{ marginRight: 6, verticalAlign: 'middle', opacity: 0.9 }} /> })()}
+                    {section.label}
+                  </span>
+                  <div className="admin-nav-section-links">
+                    {section.children.map((item) => (
+                      <NavLink
+                        key={item.href}
+                        href={item.href}
+                        label={item.label}
+                        path={path}
+                        isLogout={item.isLogout}
+                        router={router}
+                        logout={logout}
+                        icon={item.icon}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div key={section.label} className="admin-nav-section admin-nav-section-single">
+                  <div className="admin-nav-section-links">
+                    <NavLink
+                      href={section.href}
+                      label={section.label}
+                      path={path}
+                      router={router}
+                      logout={logout}
+                      icon={section.icon}
+                    />
+                  </div>
+                </div>
+              )
+            )}
           </nav>
         </aside>
-        <main style={{ flex: 1, overflow: 'auto', padding: 24 }}>{children}</main>
+        <main className="admin-main">{children}</main>
       </div>
     </div>
   );

@@ -37,7 +37,12 @@ export default function APIPage() {
             <li><code>GET /campaigns/:id</code> — Get campaign</li>
             <li><code>POST /campaigns/:id/recipients</code> — Add recipients</li>
             <li><code>POST /campaigns/:id/start</code> — Start campaign</li>
+            <li><code>GET /campaigns/:id/export?format=csv</code> — Export recipients CSV</li>
+            <li><code>POST /campaigns/validate-numbers</code> — Validate phone numbers</li>
             <li><code>GET /credits/history</code> — Credit history</li>
+            <li><code>GET /demo-requests/limits</code> — Demo limits</li>
+            <li><code>POST /demo-requests</code> — Submit demo request</li>
+            <li><code>POST /ai/generate-message</code> — Generate message with AI (once/day free)</li>
           </ul>
         </div>
       </div>

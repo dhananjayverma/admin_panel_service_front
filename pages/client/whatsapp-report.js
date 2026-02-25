@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import ClientLayout from '../../components/ClientLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function WhatsAppReportPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(null);
+  const toast = useToast();
 
   useEffect(() => {
     if (!authLoading && (!user || !['client', 'reseller'].includes(user.role))) {
@@ -58,6 +60,7 @@ export default function WhatsAppReportPage() {
                 <th className="px-5 py-3.5 text-xs font-semibold text-slate-600 uppercase">Status</th>
                 <th className="px-5 py-3.5 text-xs font-semibold text-slate-600 uppercase">Sent</th>
                 <th className="px-5 py-3.5 text-xs font-semibold text-slate-600 uppercase">Failed</th>
+                <th className="px-5 py-3.5 text-xs font-semibold text-slate-600 uppercase">Export</th>
               </tr>
             </thead>
             <tbody>
@@ -67,6 +70,11 @@ export default function WhatsAppReportPage() {
                   <td className="px-5 py-3.5 text-slate-600">{c.status}</td>
                   <td className="px-5 py-3.5 text-emerald-600">{c.sentCount ?? 0}</td>
                   <td className="px-5 py-3.5 text-red-600">{c.failedCount ?? 0}</td>
+                  <td className="px-5 py-3.5">
+                    <button type="button" disabled={exporting === c._id} onClick={async () => { setExporting(c._id); try { await api.campaigns.exportCsv(c._id); toast.success('CSV downloaded'); } catch (e) { toast.error(e.message); } finally { setExporting(null); } }} className="text-sm text-blue-600 hover:text-blue-700 font-medium disabled:opacity-50">
+                      {exporting === c._id ? '…' : 'Export CSV'}
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

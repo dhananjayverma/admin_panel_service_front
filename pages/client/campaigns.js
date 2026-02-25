@@ -130,6 +130,7 @@ export default function ClientCampaigns() {
             <select value={campaignType} onChange={(e) => setCampaignType(e.target.value)} className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
               <option value="text">Text</option>
               <option value="button">Button Campaign</option>
+              <option value="dp">DP Campaign</option>
             </select>
           </div>
           <div>
@@ -176,7 +177,7 @@ export default function ClientCampaigns() {
               {campaigns.map((c) => (
                 <tr key={c._id} className="border-b border-slate-100 hover:bg-slate-50/50">
                   <td className="px-5 py-3.5 font-medium text-slate-800">{c.name}</td>
-                  <td className="px-5 py-3.5 text-slate-600">{c.type === 'button' ? 'Button' : 'Text'}</td>
+                  <td className="px-5 py-3.5 text-slate-600">{c.type === 'dp' ? 'DP' : c.type === 'button' ? 'Button' : 'Text'}</td>
                   <td className="px-5 py-3.5"><StatusBadge status={c.status} /></td>
                   <td className="px-5 py-3.5 text-slate-600">{c.recipientCount ?? 0}</td>
                   <td className="px-5 py-3.5 text-slate-600">{c.sentCount ?? 0} <span className="text-slate-400">/</span> {c.failedCount ?? 0}</td>
@@ -188,9 +189,7 @@ export default function ClientCampaigns() {
                       {(c.status === 'running' || c.status === 'queued') && (
                         <button type="button" onClick={() => setConfirmAction({ type: 'pause', id: c._id, name: c.name })} className="text-amber-600 hover:text-amber-700 font-medium text-sm">Pause</button>
                       )}
-                      {c.status === 'draft' && (
-                        <a href={`/client/campaigns/${c._id}`} className="text-slate-600 hover:text-slate-800 font-medium text-sm">Edit / Add recipients</a>
-                      )}
+                      <a href={`/client/campaigns/${c._id}`} className="text-slate-600 hover:text-slate-800 font-medium text-sm">{c.status === 'draft' ? 'Edit / Add recipients' : 'View'}</a>
                     </div>
                   </td>
                 </tr>

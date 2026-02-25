@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import "../styles/admin.css";
 import { AuthProvider } from "../contexts/AuthContext";
 import { ToastProvider } from "../contexts/ToastContext";
 

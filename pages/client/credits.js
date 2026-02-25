@@ -10,7 +10,7 @@ export default function ClientCredits() {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('credit');
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refresh } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -19,16 +19,17 @@ export default function ClientCredits() {
       return;
     }
     if (!user) return;
+    refresh();
     api.credits.history()
       .then((r) => setHistory(r.list || []))
       .catch(() => setHistory([]))
       .finally(() => setLoading(false));
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, refresh]);
 
   if (authLoading || !user) return <LoadingSpinner />;
 
   const balance = user.creditBalance ?? 0;
-  const wappBtnBalance = balance;
+  const wappBtnBalance = user.rBtnCredit != null ? user.rBtnCredit : balance;
 
   return (
     <ClientLayout>
@@ -41,8 +42,8 @@ export default function ClientCredits() {
         <button type="button" onClick={() => setTab('wapp')} className={`px-4 py-2 text-sm font-medium rounded-t-lg ${tab === 'wapp' ? 'bg-slate-100 text-slate-800 border border-slate-200 border-b-0' : 'text-slate-600 hover:bg-slate-50'}`}>Wapp BTN : {wappBtnBalance.toFixed(2)}</button>
       </div>
       <div className="bg-white rounded-xl border border-slate-200 p-6 mb-8 inline-block shadow-sm">
-        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">Your balance</p>
-        <p className="text-3xl font-bold text-emerald-600 mt-1">{balance}</p>
+        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{tab === 'credit' ? 'Credit balance' : 'Wapp BTN balance'}</p>
+        <p className="text-3xl font-bold text-emerald-600 mt-1">{tab === 'credit' ? balance : wappBtnBalance}</p>
       </div>
       <h2 className="text-lg font-semibold text-slate-800 mb-3">History</h2>
       {loading ? <LoadingSpinner /> : history.length === 0 ? <EmptyState message="No transactions yet." /> : (
