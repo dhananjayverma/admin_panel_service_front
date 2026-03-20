@@ -6,10 +6,6 @@ import {
   Menu,
   LayoutDashboard,
   Megaphone,
-  Send,
-  Image,
-  MousePointerClick,
-  MessageSquare,
   Code,
   MessageCircle,
   FileText,
@@ -19,21 +15,14 @@ import {
   ClipboardList,
   User,
   LogOut,
+  Smartphone,
+  Key,
+  Shield,
 } from 'lucide-react';
 const BrandIcon = MessageCircle;
 
 const navSections = [
-  {
-    label: 'Campaigns',
-    icon: Megaphone,
-    children: [
-      { label: 'Campaign', href: '/admin/campaigns', icon: Send },
-      { label: 'DP Campaign', href: '/admin/dp-campaign', icon: Image },
-      { label: 'Button Campaign', href: '/admin/button-campaign', icon: MousePointerClick },
-      { label: 'Action Button', href: '/admin/action-button', icon: MousePointerClick },
-      { label: 'Button SMS', href: '/admin/button-sms', icon: MessageSquare },
-    ],
-  },
+  { label: 'Campaigns', href: '/admin/campaigns', icon: Megaphone },
   { label: 'API', href: '/admin/api', icon: Code },
   { label: 'Chatbot', href: '/admin/chatbot', icon: MessageCircle },
   {
@@ -49,9 +38,13 @@ const navSections = [
     label: 'Management',
     icon: Users,
     children: [
+      { label: 'WhatsApp Login', href: '/admin/whatsapp-login', icon: MessageCircle },
+      { label: 'Virtual Numbers', href: '/admin/numbers', icon: Smartphone },
       { label: 'Manage Users', href: '/admin/users', icon: Users },
+      { label: 'Access Control', href: '/admin/access', icon: Shield },
       { label: 'Credit Manage', href: '/admin/credits', icon: CreditCard },
       { label: 'Demo Requests', href: '/admin/demo-requests', icon: ClipboardList },
+      { label: 'API Keys', href: '/admin/api', icon: Key },
     ],
   },
   {
@@ -153,7 +146,9 @@ export default function AdminLayout({ children }) {
       </header>
 
       <div className="admin-banner">
-        Session Time Will Be From 9:30 AM to 6:00 PM. On Sunday It Will Be From 9:30 AM to 12 PM
+        <marquee direction="left" behavior="scroll">
+          Session Time Will Be From 9:30 AM to 6:00 PM. On Sunday It Will Be From 9:30 AM to 12 PM
+        </marquee>
       </div>
 
       <div

@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import ClientLayout from '../../components/ClientLayout';
+import ResellerLayout from '../../components/ResellerLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
+import { useRouter } from 'next/router';
 
 const CREDIT_TYPES = [
   { key: 'normal', label: 'Normal Credit' },
@@ -20,7 +20,7 @@ const STATUS_STYLE = {
   rejected: { background: '#fef2f2', color: '#b91c1c', border: '1px solid #fca5a5' },
 };
 
-export default function DemoRequestsPage() {
+export default function ResellerDemoRequests() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const toast = useToast();
@@ -33,8 +33,8 @@ export default function DemoRequestsPage() {
   const loadList = () => api.demoRequests.my().then((r) => setList(r.list || [])).catch(() => setList([]));
 
   useEffect(() => {
-    if (!authLoading && (!user || !['client', 'reseller'].includes(user.role))) {
-      router.replace(user ? (user.role === 'admin' ? '/admin/dashboard' : '/login') : '/login');
+    if (!authLoading && (!user || user.role !== 'reseller')) {
+      router.replace(user ? (user.role === 'admin' ? '/admin/dashboard' : '/client/dashboard') : '/login');
       return;
     }
     if (!user) return;
@@ -64,22 +64,22 @@ export default function DemoRequestsPage() {
   if (authLoading || !user) return <LoadingSpinner />;
 
   return (
-    <ClientLayout>
+    <ResellerLayout>
       <h1 className="text-2xl font-bold text-slate-800 mb-1">Demo Requests</h1>
       <p className="text-slate-500 text-sm mb-6">Session: 9:30 AM – 6:00 PM (Sunday until 12 PM). Limit: 2 demos/day.</p>
 
-      {/* Status bar */}
       {limits && (
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">
           <p className="text-slate-700 text-sm font-medium">
             Today: {limits.demosToday} / {limits.demosLimit} demo requests used
             &nbsp;·&nbsp;
-            {limits.withinWindow ? <span className="text-emerald-600">Within demo hours</span> : <span className="text-red-500">Outside demo hours</span>}
+            {limits.withinWindow
+              ? <span className="text-emerald-600">Within demo hours</span>
+              : <span className="text-red-500">Outside demo hours</span>}
           </p>
         </div>
       )}
 
-      {/* Submit form */}
       <form onSubmit={onSubmit} className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm mb-8 max-w-md space-y-4">
         <h2 className="text-sm font-semibold text-slate-700">Submit New Demo Request</h2>
         <div>
@@ -110,7 +110,6 @@ export default function DemoRequestsPage() {
         )}
       </form>
 
-      {/* History */}
       <h2 className="text-lg font-semibold text-slate-800 mb-3">My Requests</h2>
       {loading ? <LoadingSpinner /> : list.length === 0 ? (
         <EmptyState message="No demo requests submitted yet." />
@@ -149,6 +148,6 @@ export default function DemoRequestsPage() {
           </table>
         </div>
       )}
-    </ClientLayout>
+    </ResellerLayout>
   );
 }

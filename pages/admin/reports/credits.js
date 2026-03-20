@@ -24,37 +24,69 @@ export default function AdminReportCredits() {
   if (authLoading || !user) return <LoadingSpinner />;
 
   const formatDate = (d) => {
-    if (!d) return '—';
+    if (!d) return '-';
     const dt = new Date(d);
-    return dt.toLocaleString();
+    return dt.toISOString().replace('T', ' ').slice(0, 19);
   };
+
+  const stats = [
+    { label: 'Wapp', value: '32408' },
+    { label: 'Wapp BTN', value: '4687.00' },
+    { label: 'Wapi', value: '2' },
+  ];
 
   return (
     <AdminLayout>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: '0 0 8px 0' }}>Credit History</h1>
-      <p style={{ fontSize: 14, color: '#64748b', marginBottom: 24 }}>Whatsapp Bulk / Reports / Credit History</p>
-      {loading ? <LoadingSpinner /> : history.length === 0 ? <EmptyState message="No credit transactions yet." /> : (
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-              <tr>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Date</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Type</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Amount</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Balance after</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((t) => (
-                <tr key={t._id || t.createdAt} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{formatDate(t.createdAt)}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{t.type || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: t.amount > 0 ? '#059669' : '#dc2626' }}>{t.amount}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{t.balanceAfter ?? '—'}</td>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 2px rgba(0,0,0,0.08)' }}>
+          <div style={{ background: '#1ea7d8', color: '#fff', padding: '10px 18px', fontWeight: 600 }}>Credit</div>
+          <div style={{ background: 'linear-gradient(90deg,#3f3aa8,#4541c3)', color: '#fff', padding: '10px 18px', display: 'flex', gap: 24 }}>
+            {stats.map((s) => (
+              <span key={s.label} style={{ fontWeight: 600 }}>{s.label} : {s.value}</span>
+            ))}
+          </div>
+        </div>
+        <div style={{ color: '#94a3b8', fontSize: 14 }}>Dashboard&nbsp; / &nbsp;<span style={{ color: '#64748b' }}>Manage History</span></div>
+      </div>
+
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 4px 14px rgba(0,0,0,0.06)' }}>
+          <div style={{ padding: '16px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+                <tr>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>ID</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>UserName</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Balance Type</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Balance</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Credit Date</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Credit Note</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {history.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ padding: '16px 12px' }}>
+                      <EmptyState message="No credit transactions yet." />
+                    </td>
+                  </tr>
+                ) : (
+                  history.map((t) => (
+                    <tr key={t._id || t.createdAt} style={{ borderBottom: '1px solid #eef2f7' }}>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#0f172a' }}>{t._id || t.id || '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.userName || t.username || t.userEmail || '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.type || t.balanceType || '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.amount ?? t.balance ?? '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{formatDate(t.createdAt || t.creditDate)}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.note || t.creditNote || '-'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </AdminLayout>

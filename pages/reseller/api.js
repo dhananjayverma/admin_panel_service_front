@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import ClientLayout from '../../components/ClientLayout';
+import ResellerLayout from '../../components/ResellerLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -8,7 +8,7 @@ import { useRouter } from 'next/router';
 
 const API_BASE = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api') : '';
 
-export default function APIPage() {
+export default function ResellerAPI() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const toast = useToast();
@@ -16,14 +16,14 @@ export default function APIPage() {
   const [loadingKeys, setLoadingKeys] = useState(true);
   const [newKeyName, setNewKeyName] = useState('');
   const [creating, setCreating] = useState(false);
-  const [revealedKey, setRevealedKey] = useState(null); // { id, key }
+  const [revealedKey, setRevealedKey] = useState(null);
   const [revoking, setRevoking] = useState(null);
 
   const loadKeys = () => api.apiKeys.list().then((r) => setKeys(r.keys || [])).catch(() => setKeys([]));
 
   useEffect(() => {
-    if (!authLoading && (!user || !['client', 'reseller'].includes(user.role))) {
-      router.replace(user ? (user.role === 'admin' ? '/admin/dashboard' : '/login') : '/login');
+    if (!authLoading && (!user || user.role !== 'reseller')) {
+      router.replace(user ? (user.role === 'admin' ? '/admin/dashboard' : '/client/dashboard') : '/login');
       return;
     }
     if (!user) return;
@@ -64,11 +64,11 @@ export default function APIPage() {
   if (authLoading || !user) return <LoadingSpinner />;
 
   return (
-    <ClientLayout>
+    <ResellerLayout>
       <h1 className="text-2xl font-bold text-slate-800 mb-1">API</h1>
-      <p className="text-slate-500 text-sm mb-6">Generate API keys and use the API to send messages programmatically.</p>
+      <p className="text-slate-500 text-sm mb-6">Generate API keys and use the API programmatically.</p>
 
-      {/* Create key form */}
+      {/* Create key */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm mb-6 max-w-lg">
         <h2 className="text-sm font-semibold text-slate-700 mb-3">Create New API Key</h2>
         <form onSubmit={handleCreate} style={{ display: 'flex', gap: 10 }}>
@@ -85,7 +85,7 @@ export default function APIPage() {
         </form>
       </div>
 
-      {/* Revealed key (show once) */}
+      {/* Revealed key */}
       {revealedKey && (
         <div style={{ background: '#f0fdf4', border: '1.5px solid #86efac', borderRadius: 12, padding: '16px 18px', marginBottom: 20, maxWidth: 600 }}>
           <p style={{ fontSize: 13, fontWeight: 700, color: '#15803d', margin: '0 0 8px' }}>
@@ -145,7 +145,7 @@ export default function APIPage() {
         </div>
       )}
 
-      {/* API Reference */}
+      {/* Docs */}
       <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm max-w-2xl space-y-4">
         <h2 className="text-sm font-semibold text-slate-700">API Reference</h2>
         <div>
@@ -162,13 +162,11 @@ export default function APIPage() {
           <label className="block text-xs font-medium text-slate-500 mb-1 uppercase tracking-wider">Endpoints</label>
           <ul className="text-sm text-slate-600 space-y-1">
             {[
-              ['GET', '/campaigns', 'List campaigns'],
-              ['POST', '/campaigns', 'Create campaign'],
-              ['POST', '/campaigns/:id/recipients', 'Add recipients'],
-              ['POST', '/campaigns/:id/start', 'Start campaign'],
-              ['GET', '/campaigns/:id/export?format=csv', 'Export CSV'],
-              ['POST', '/campaigns/validate-numbers', 'Validate numbers'],
+              ['GET', '/campaigns', 'List all client campaigns'],
+              ['GET', '/users?role=client', 'List your clients'],
+              ['POST', '/credits/purchase', 'Grant credits to client'],
               ['GET', '/credits/history', 'Credit history'],
+              ['GET', '/analytics/overview', 'Analytics overview'],
             ].map(([method, path, desc]) => (
               <li key={path} style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: method === 'GET' ? '#0891b2' : '#7c3aed', minWidth: 36 }}>{method}</span>
@@ -179,6 +177,6 @@ export default function APIPage() {
           </ul>
         </div>
       </div>
-    </ClientLayout>
+    </ResellerLayout>
   );
 }

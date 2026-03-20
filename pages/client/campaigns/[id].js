@@ -159,6 +159,20 @@ export default function CampaignDetail() {
     }
   };
 
+  const resume = async () => {
+    setStarting(true);
+    try {
+      await api.campaigns.start(id);
+      const r = await api.campaigns.get(id);
+      setCampaign(r.campaign);
+      toast.success('Campaign resumed');
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setStarting(false);
+    }
+  };
+
   if (authLoading || !user) return <LoadingSpinner />;
   if (loading && !campaign) return <ClientLayout><LoadingSpinner /></ClientLayout>;
   if (!campaign) return <ClientLayout><p className="text-zinc-600">Campaign not found.</p></ClientLayout>;
@@ -173,6 +187,75 @@ export default function CampaignDetail() {
         <StatusBadge status={campaign.status} />
       </div>
       <p className="text-slate-500 text-sm mb-6">Recipients: {campaign.recipientCount ?? 0} · Sent: {campaign.sentCount ?? 0} · Failed: {campaign.failedCount ?? 0}{campaign.type === 'button' ? ` · Type: Button` : ''}</p>
+
+      {/* ── Pause / Block Alert ─────────────────────────────────────── */}
+      {campaign.status === 'paused' && campaign.pauseReason && (
+        <div style={{
+          background: campaign.pauseReason.startsWith('all_numbers_blocked') ? '#fef2f2' : '#fef3c7',
+          border: `1px solid ${campaign.pauseReason.startsWith('all_numbers_blocked') ? '#fecaca' : '#f59e0b'}`,
+          borderRadius: 10, padding: '16px 18px', marginBottom: 20
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>
+              {campaign.pauseReason.startsWith('all_numbers_blocked') ? '🚫' : campaign.pauseReason.startsWith('manual_pause') ? '⏸' : '⚠️'}
+            </span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 700, color: campaign.pauseReason.startsWith('all_numbers_blocked') ? '#b91c1c' : '#92400e', fontSize: 15, marginBottom: 6 }}>
+                {campaign.pauseReason.startsWith('all_numbers_blocked')
+                  ? 'Campaign Auto-Paused — Sending Number Blocked'
+                  : campaign.pauseReason.startsWith('manual_pause')
+                  ? 'Campaign Paused Manually'
+                  : 'Campaign Paused — Issue Detected'}
+              </div>
+              <div style={{ fontSize: 13, color: campaign.pauseReason.startsWith('all_numbers_blocked') ? '#dc2626' : '#78350f', lineHeight: 1.6 }}>
+                {campaign.pauseReason.replace(/^[^—]*—\s*/, '') || campaign.pauseReason}
+              </div>
+              {campaign.pausedAt && (
+                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 6 }}>
+                  Paused at: {new Date(campaign.pausedAt).toLocaleString()}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action row */}
+          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+            <button
+              type="button"
+              onClick={resume}
+              disabled={starting}
+              style={{
+                background: campaign.pauseReason.startsWith('all_numbers_blocked') ? '#dc2626' : '#d97706',
+                color: '#fff', border: 'none', borderRadius: 8, padding: '8px 22px',
+                fontWeight: 700, fontSize: 13, cursor: starting ? 'not-allowed' : 'pointer', opacity: starting ? 0.6 : 1
+              }}
+            >
+              {starting ? 'Resuming…' : '▶ Resume Campaign'}
+            </button>
+            <span style={{ fontSize: 12, color: '#64748b' }}>
+              {campaign.pauseReason.startsWith('all_numbers_blocked')
+                ? 'Ask your admin to unblock or add new virtual numbers before resuming.'
+                : campaign.pauseReason.startsWith('manual_pause')
+                ? 'Campaign will continue from where it left off.'
+                : 'Check WhatsApp connections in the admin panel, then resume.'}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Running / Completed progress summary */}
+      {(campaign.status === 'running' || campaign.status === 'queued' || campaign.status === 'completed') && (
+        <div style={{ background: campaign.status === 'completed' ? '#f0fdf4' : '#eff6ff', border: `1px solid ${campaign.status === 'completed' ? '#bbf7d0' : '#bfdbfe'}`, borderRadius: 10, padding: '12px 16px', marginBottom: 20 }}>
+          <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ fontSize: 13, color: '#374151' }}>Sent: <strong style={{ color: '#16a34a' }}>{campaign.sentCount ?? 0}</strong></span>
+            <span style={{ fontSize: 13, color: '#374151' }}>Failed: <strong style={{ color: '#dc2626' }}>{campaign.failedCount ?? 0}</strong></span>
+            <span style={{ fontSize: 13, color: '#374151' }}>Pending: <strong>{Math.max(0, (campaign.recipientCount ?? 0) - (campaign.sentCount ?? 0) - (campaign.failedCount ?? 0))}</strong></span>
+            {campaign.status === 'running' && <span style={{ fontSize: 12, color: '#3b82f6', fontWeight: 600 }}>Sending…</span>}
+            {campaign.status === 'completed' && <span style={{ fontSize: 12, color: '#16a34a', fontWeight: 600 }}>Completed</span>}
+          </div>
+        </div>
+      )}
+
       {campaign.status === 'draft' && (
         <form onSubmit={saveMessageBody} className="bg-white border border-slate-200 rounded-xl p-6 mb-6 shadow-sm">
           <p className="text-red-600 text-sm mb-2">Message: Demo Limit : 2 Demos / Day</p>
@@ -226,6 +309,16 @@ export default function CampaignDetail() {
           {campaign.recipientCount > 0 && (
             <button type="button" onClick={start} disabled={starting} className="bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 shadow-lg shadow-emerald-900/20">Start campaign</button>
           )}
+        </>
+      )}
+
+      {/* Manual-paused campaign (no automatic reason) — show a plain Resume button */}
+      {campaign.status === 'paused' && !campaign.pauseReason && (
+        <>
+          <p className="text-slate-500 text-sm mb-4">Campaign is paused. Resume to continue sending to remaining recipients.</p>
+          <button type="button" onClick={resume} disabled={starting} className="bg-emerald-600 text-white px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-emerald-700 disabled:opacity-50 shadow-lg shadow-emerald-900/20">
+            {starting ? 'Resuming…' : 'Resume Campaign'}
+          </button>
         </>
       )}
     </ClientLayout>

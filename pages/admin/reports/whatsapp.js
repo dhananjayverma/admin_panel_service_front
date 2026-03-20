@@ -11,6 +11,8 @@ export default function AdminReportWhatsApp() {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(null);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const toast = useToast();
@@ -26,54 +28,141 @@ export default function AdminReportWhatsApp() {
 
   if (authLoading || !user) return <LoadingSpinner />;
 
-  const completed = campaigns.filter((c) => c.status === 'completed');
-  const totalSent = campaigns.reduce((s, c) => s + (c.sentCount || 0), 0);
-  const totalFailed = campaigns.reduce((s, c) => s + (c.failedCount || 0), 0);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
 
   return (
     <AdminLayout>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: '0 0 8px 0' }}>WhatsApp Report</h1>
-      <p style={{ fontSize: 14, color: '#64748b', marginBottom: 24 }}>Whatsapp Bulk / Reports / WhatsApp Report</p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20, marginBottom: 24 }}>
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: '#64748b', margin: 0, textTransform: 'uppercase' }}>Campaigns completed</p>
-          <p style={{ fontSize: 24, fontWeight: 700, color: '#0f172a', marginTop: 8 }}>{completed.length}</p>
-        </div>
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: '#64748b', margin: 0, textTransform: 'uppercase' }}>Total sent</p>
-          <p style={{ fontSize: 24, fontWeight: 700, color: '#059669', marginTop: 8 }}>{totalSent}</p>
-        </div>
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          <p style={{ fontSize: 12, fontWeight: 600, color: '#64748b', margin: 0, textTransform: 'uppercase' }}>Total failed</p>
-          <p style={{ fontSize: 24, fontWeight: 700, color: '#dc2626', marginTop: 8 }}>{totalFailed}</p>
-        </div>
-      </div>
-      {loading ? <LoadingSpinner /> : campaigns.length === 0 ? <EmptyState message="No campaigns." /> : (
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-              <tr>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Name</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Status</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Sent</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Failed</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Export</th>
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.map((c) => (
-                <tr key={c._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#0f172a' }}>{c.name}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{c.status}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{c.sentCount ?? 0}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{c.failedCount ?? 0}</td>
-                  <td style={{ padding: '12px 16px' }}>
-                    <button type="button" disabled={exporting === c._id} onClick={async () => { setExporting(c._id); try { await api.campaigns.exportCsv(c._id); toast.success('CSV downloaded'); } catch (e) { toast.error(e.message); } finally { setExporting(null); } }} style={{ fontSize: 13, color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer' }}>{exporting === c._id ? '…' : 'Export CSV'}</button>
-                  </td>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 18,
+          padding: '18px 16px',
+          background: '#fff',
+          borderRadius: 10,
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+          marginBottom: 24,
+        }}
+      >
+        <label style={{ fontSize: 16, color: '#0f172a' }}>
+          Start
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            style={{
+              marginLeft: 12,
+              padding: '10px 14px',
+              borderRadius: 6,
+              border: '1px solid #d1d5db',
+              minWidth: 220,
+              fontSize: 14,
+            }}
+          />
+        </label>
+        <label style={{ fontSize: 16, color: '#0f172a' }}>
+          End
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            style={{
+              marginLeft: 12,
+              padding: '10px 14px',
+              borderRadius: 6,
+              border: '1px solid #d1d5db',
+              minWidth: 220,
+              fontSize: 14,
+            }}
+          />
+        </label>
+        <button
+          type="submit"
+          style={{
+            background: '#2d3fa5',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            padding: '10px 22px',
+            fontSize: 15,
+            fontWeight: 600,
+            cursor: 'pointer',
+            boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
+          }}
+        >
+          Submit
+        </button>
+      </form>
+      {loading ? <LoadingSpinner /> : (
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 4px 14px rgba(0,0,0,0.08)' }}>
+          <div style={{ padding: '18px 20px 8px', fontSize: 16, color: '#0f172a' }}>
+            It&apos;ll available for the next 60 days only. If we will be informed within 12 hours
+          </div>
+          <div style={{ padding: '0 16px 18px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+                <tr>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>ID</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>User Name</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Campaign Name</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Number Count</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Campaign List</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Type</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>T&amp;C</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Campaign Submit</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Campaign Report</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {campaigns.length === 0 ? (
+                  <tr>
+                    <td colSpan={9} style={{ padding: '16px 12px' }}>
+                      <EmptyState message="No campaigns." />
+                    </td>
+                  </tr>
+                ) : (
+                  campaigns.map((c, index) => (
+                    <tr key={c._id} style={{ borderBottom: '1px solid #eef2f7' }}>
+                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#0f172a' }}>{index + 1}</td>
+                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.userName || c.ownerName || '-'}</td>
+                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#0f172a' }}>{c.name || '-'}</td>
+                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.numberCount ?? c.totalNumbers ?? '-'}</td>
+                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.listName || c.campaignList || '-'}</td>
+                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.type || '-'}</td>
+                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.termsAccepted ? 'Yes' : '-'}</td>
+                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-'}</td>
+                      <td style={{ padding: '10px 12px' }}>
+                        <button
+                          type="button"
+                          disabled={exporting === c._id}
+                          onClick={async () => {
+                            setExporting(c._id);
+                            try {
+                              await api.campaigns.exportCsv(c._id);
+                              toast.success('CSV downloaded');
+                            } catch (e) {
+                              toast.error(e.message);
+                            } finally {
+                              setExporting(null);
+                            }
+                          }}
+                          style={{ fontSize: 13, color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer' }}
+                        >
+                          {exporting === c._id ? '...' : 'View'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </AdminLayout>

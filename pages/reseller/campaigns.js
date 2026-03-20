@@ -49,7 +49,15 @@ export default function ResellerCampaigns() {
               {campaigns.map((c) => (
                 <tr key={c._id} className="border-b border-slate-100 hover:bg-slate-50/50">
                   <td className="px-5 py-3.5 font-medium text-slate-800">{c.name}</td>
-                  <td className="px-5 py-3.5"><StatusBadge status={c.status} /></td>
+                  <td className="px-5 py-3.5">
+                    <StatusBadge status={c.status} />
+                    {c.status === 'paused' && c.pauseReason && (
+                      <div style={{ fontSize: 10, color: c.pauseReason.startsWith('all_numbers_blocked') ? '#dc2626' : '#b45309', marginTop: 2, maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                        title={c.pauseReason.replace(/^[^—]*—\s*/, '') || c.pauseReason}>
+                        {c.pauseReason.startsWith('all_numbers_blocked') ? '🚫 Number blocked' : c.pauseReason.startsWith('manual_pause') ? '⏸ Manual pause' : '⚠️ ' + (c.pauseReason.split('—')[0] || 'Paused')}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-5 py-3.5 text-slate-600">{c.recipientCount ?? 0}</td>
                   <td className="px-5 py-3.5 text-slate-600">{c.sentCount ?? 0}</td>
                   <td className="px-5 py-3.5 text-slate-600">{c.failedCount ?? 0}</td>

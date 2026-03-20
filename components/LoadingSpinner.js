@@ -6,7 +6,7 @@ export default function LoadingSpinner() {
           width: 40,
           height: 40,
           border: '3px solid #e2e8f0',
-          borderTopColor: '#475569',
+          borderTopColor: 'var(--primary)',
           borderRadius: '50%',
           animation: 'app-spin 0.8s linear infinite',
         }}

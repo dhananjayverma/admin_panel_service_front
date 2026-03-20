@@ -1,16 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../../../components/AdminLayout';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import EmptyState from '../../../components/EmptyState';
 import { api } from '../../../lib/api';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useRouter } from 'next/router';
+import { useToast } from '../../../contexts/ToastContext';
 
 export default function AdminReportCampaigns() {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(null);
+  const [selectedUser, setSelectedUser] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
+  const toast = useToast();
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'admin')) {
@@ -23,32 +29,122 @@ export default function AdminReportCampaigns() {
 
   if (authLoading || !user) return <LoadingSpinner />;
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+  };
+
+  const userOptions = useMemo(() => {
+    const set = new Set();
+    campaigns.forEach((c) => {
+      const name = c.userName || c.ownerName || c.user?.email || c.userId?.email;
+      if (name) set.add(name);
+    });
+    return Array.from(set);
+  }, [campaigns]);
+
   return (
     <AdminLayout>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: '0 0 8px 0' }}>My User&apos;s Campaigns</h1>
-      <p style={{ fontSize: 14, color: '#64748b', marginBottom: 24 }}>Whatsapp Bulk / Reports / My User&apos;s Campaigns</p>
-      {loading ? <LoadingSpinner /> : campaigns.length === 0 ? <EmptyState message="No campaigns." /> : (
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-              <tr>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Name</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Type</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Status</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Sent</th>
-              </tr>
-            </thead>
-            <tbody>
-              {campaigns.map((c) => (
-                <tr key={c._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#0f172a' }}>{c.name}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{c.type || 'text'}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{c.status}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{c.sentCount ?? 0}</td>
+      <form
+        onSubmit={handleSubmit}
+        className="admin-report-filter"
+      >
+        <select
+          value={selectedUser}
+          onChange={(e) => setSelectedUser(e.target.value)}
+          className="admin-report-input"
+        >
+          <option value="">Select User</option>
+          {userOptions.map((u) => (
+            <option key={u} value={u}>{u}</option>
+          ))}
+        </select>
+        <label className="admin-report-date">
+          <span>Start</span>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="admin-report-input"
+          />
+        </label>
+        <label className="admin-report-date">
+          <span>End</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="admin-report-input"
+          />
+        </label>
+        <div />
+        <button
+          type="submit"
+          className="admin-report-submit"
+        >
+          Submit
+        </button>
+      </form>
+
+      {loading ? <LoadingSpinner /> : (
+        <div className="admin-report-table">
+          <div className="admin-report-table-head" />
+          <div className="admin-report-table-wrap">
+            <table className="admin-report-table-grid">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>User Name</th>
+                  <th>Campaign Name</th>
+                  <th>Number Count</th>
+                  <th>Type</th>
+                  <th>T&amp;C</th>
+                  <th>Campaign Submit</th>
+                  <th>Campaign Report</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {campaigns.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="admin-report-empty">
+                      <EmptyState message="No campaigns." />
+                    </td>
+                  </tr>
+                ) : (
+                  campaigns.map((c, index) => (
+                    <tr key={c._id}>
+                      <td>{index + 1}</td>
+                      <td>{c.userName || c.ownerName || c.user?.email || '-'}</td>
+                      <td>{c.name || '-'}</td>
+                      <td>{c.numberCount ?? c.totalNumbers ?? '-'}</td>
+                      <td>{c.type || '-'}</td>
+                      <td>{c.termsAccepted ? 'Yes' : '-'}</td>
+                      <td>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-'}</td>
+                      <td>
+                        <button
+                          type="button"
+                          disabled={exporting === c._id}
+                          onClick={async () => {
+                            setExporting(c._id);
+                            try {
+                              await api.campaigns.exportCsv(c._id);
+                              toast.success('CSV downloaded');
+                            } catch (e) {
+                              toast.error(e.message);
+                            } finally {
+                              setExporting(null);
+                            }
+                          }}
+                          className="admin-report-link"
+                        >
+                          {exporting === c._id ? '...' : 'View'}
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </AdminLayout>

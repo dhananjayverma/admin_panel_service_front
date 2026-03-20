@@ -1,47 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
+import Image from 'next/image';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../lib/api';
-import { MessageCircle, LogIn, RefreshCw, Smartphone } from 'lucide-react';
-
-function getCaptchaUrl() {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-  return base.replace(/\/api\/?$/, '') + '/api/auth/captcha';
-}
+import { MessageCircle, LogIn, ShieldCheck, Zap, BarChart3, Eye, EyeOff } from 'lucide-react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [captchaId, setCaptchaId] = useState('');
-  const [captchaSvg, setCaptchaSvg] = useState('');
-  const [captchaCode, setCaptchaCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [captchaLoading, setCaptchaLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const { login, user } = useAuth();
-
-  const loadCaptcha = () => {
-    setCaptchaLoading(true);
-    setCaptchaCode('');
-    setError((e) => (e && e.includes('captcha') ? '' : e));
-    fetch(getCaptchaUrl(), { method: 'GET', headers: { Accept: 'application/json' } })
-      .then((res) => res.json().catch(() => ({})))
-      .then((r) => {
-        if (r.captchaId && r.svg) {
-          setCaptchaId(r.captchaId);
-          setCaptchaSvg(r.svg);
-        } else {
-          setError(r.message || 'Could not load captcha');
-        }
-      })
-      .catch(() => setError('Could not load captcha. Check that the API is running and try again.'))
-      .finally(() => setCaptchaLoading(false));
-  };
-
-  useEffect(() => {
-    loadCaptcha();
-  }, []);
 
   if (user) {
     const dash = user.role === 'admin' ? '/admin/dashboard' : user.role === 'reseller' ? '/reseller/dashboard' : '/client/dashboard';
@@ -52,160 +22,138 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!captchaId || !captchaCode.trim()) {
-      setError('Please enter the captcha code');
-      return;
-    }
     setLoading(true);
     try {
-      const u = await login(email, password, captchaId, captchaCode);
+      const u = await login(email, password);
       const dash = u.role === 'admin' ? '/admin/dashboard' : u.role === 'reseller' ? '/reseller/dashboard' : '/client/dashboard';
       router.push(dash);
     } catch (err) {
       setError(err.message || 'Login failed');
-      loadCaptcha();
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexWrap: 'wrap' }}>
-      {/* Left: Marketing / Branding */}
-      <div
-        style={{
-          flex: '1 1 360px',
-          minHeight: '100vh',
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 48,
-        }}
-      >
-        <div style={{ maxWidth: 420, width: '100%' }}>
-          <div style={{ background: '#dc2626', color: '#fff', fontSize: 12, fontWeight: 700, padding: '6px 12px', borderRadius: 6, display: 'inline-block', marginBottom: 20 }}>
-            New Launch
-          </div>
-          <h1 style={{ fontSize: 32, fontWeight: 800, color: '#2563eb', margin: '0 0 16px 0', lineHeight: 1.2 }}>
-            Button SMS Marketing
-          </h1>
-          <p style={{ fontSize: 16, color: '#94a3b8', marginBottom: 40, lineHeight: 1.6 }}>
-            The right decision for your marketing strategy to grow your Business.
-          </p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap' }}>
-            <div style={{ width: 120, height: 200, background: 'linear-gradient(180deg, #475569 0%, #64748b 100%)', borderRadius: 24, position: 'relative', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.4)' }}>
-              <div style={{ position: 'absolute', top: 12, right: 12, width: 20, height: 20, background: '#e2e8f0', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 700 }}>1</div>
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-950">
+      {/* Left: brand + value */}
+      <div className="relative hidden lg:flex items-center justify-center overflow-hidden">
+        <div className="absolute inset-0 bg-linear-to-br from-slate-950 via-slate-900 to-slate-800" />
+        <div className="absolute -top-24 -left-16 h-72 w-72 rounded-full bg-sky-500/20 blur-3xl" />
+        <div className="absolute -bottom-28 -right-16 h-80 w-80 rounded-full bg-emerald-400/20 blur-3xl" />
+        <div className="absolute inset-0">
+          <Image src="/images/b.png" alt="marketing" fill style={{ objectFit: 'cover', opacity: 0.18 }} priority />
+        </div>
+
+        <div className="relative z-10 max-w-lg p-10 text-slate-100">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center border border-white/20">
+              <MessageCircle size={26} strokeWidth={2} className="text-sky-300" />
             </div>
-            <Smartphone size={80} style={{ color: '#64748b', opacity: 0.9 }} strokeWidth={1.5} />
+            <div>
+              <div className="text-sm uppercase tracking-widest text-slate-300">WhatsApp Bulk</div>
+              <div className="text-3xl font-bold">Campaigns that feel human</div>
+            </div>
+          </div>
+
+          <p className="text-slate-300 text-sm leading-relaxed mb-8">
+            Launch personalized broadcasts, manage clients, and track performance in one clean workspace.
+          </p>
+
+          <div className="grid grid-cols-1 gap-4">
+            <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+              <Zap size={18} className="text-amber-300 mt-0.5" />
+              <div>
+                <div className="text-sm font-semibold">Faster send flows</div>
+                <div className="text-xs text-slate-300">Templates, approvals, and scheduling in minutes.</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+              <BarChart3 size={18} className="text-emerald-300 mt-0.5" />
+              <div>
+                <div className="text-sm font-semibold">Live analytics</div>
+                <div className="text-xs text-slate-300">Track delivery, clicks, and ROI by campaign.</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+              <ShieldCheck size={18} className="text-sky-300 mt-0.5" />
+              <div>
+                <div className="text-sm font-semibold">Secure access</div>
+                <div className="text-xs text-slate-300">Role-based logins and tokenized sessions.</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Right: Login form */}
-      <div
-        style={{
-          flex: '1 1 360px',
-          minHeight: '100vh',
-          background: '#f8fafc',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 32,
-        }}
-      >
-        <div style={{ width: '100%', maxWidth: 400 }}>
-          <div style={{ textAlign: 'center', marginBottom: 28 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 8 }}>
-              <MessageCircle size={28} strokeWidth={2} style={{ color: '#2563eb' }} />
-              <h2 style={{ fontSize: 22, fontWeight: 700, color: '#1e293b', margin: 0 }}>WhatsApp Bulk</h2>
+      <div className="relative flex items-center justify-center bg-slate-50 p-6 lg:p-10">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_#e2e8f0,_#f8fafc_45%,_#ffffff_70%)]" />
+        <div className="relative w-full max-w-md">
+          <div className="text-center mb-7">
+            <div className="flex items-center justify-center gap-3 mb-2">
+              <div className="h-10 w-10 rounded-xl bg-sky-600 text-white flex items-center justify-center shadow">
+                <MessageCircle size={20} strokeWidth={2} />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 m-0">Welcome back</h2>
             </div>
-            <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Sign in to your account</p>
+            <p className="text-sm text-slate-500">Sign in to continue to your dashboard</p>
           </div>
 
-          <form onSubmit={handleSubmit} style={{ background: '#fff', borderRadius: 16, padding: 28, boxShadow: '0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -2px rgba(0,0,0,0.06)', border: '1px solid #e2e8f0' }}>
+          <form onSubmit={handleSubmit} className="bg-white/90 backdrop-blur rounded-2xl p-7 shadow-lg border border-slate-200">
             {error && (
-              <div style={{ fontSize: 13, color: '#b91c1c', backgroundColor: '#fef2f2', border: '1px solid #fecaca', borderRadius: 8, padding: '10px 12px', marginBottom: 16 }}>
-                {error}
-              </div>
+              <div className="text-sm text-red-700 bg-red-50 border border-red-200 rounded-md p-3 mb-4">{error}</div>
             )}
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#334155', marginBottom: 6 }}>Email</label>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 required
-                style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 15, boxSizing: 'border-box' }}
+                className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-300"
               />
             </div>
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#334155', marginBottom: 6 }}>Password</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 15, boxSizing: 'border-box' }}
-              />
-            </div>
-            <div style={{ marginBottom: 18 }}>
-              <label style={{ display: 'block', fontSize: 14, fontWeight: 500, color: '#334155', marginBottom: 6 }}>Captcha Code</label>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ background: '#e8e8e8', borderRadius: 8, overflow: 'hidden', border: '1px solid #cbd5e1', minWidth: 140, minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {captchaLoading ? (
-                    <span style={{ fontSize: 12, color: '#64748b' }}>Loading…</span>
-                  ) : captchaSvg ? (
-                    <div dangerouslySetInnerHTML={{ __html: captchaSvg }} style={{ width: 140, height: 48, display: 'inline-block', lineHeight: 0 }} />
-                  ) : (
-                    <span style={{ fontSize: 11, color: '#94a3b8' }}>No captcha</span>
-                  )}
-                </div>
+
+            <div className="mb-2">
+              <label className="block text-sm font-medium text-slate-700 mb-2">Password</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-sky-300 focus:border-sky-300"
+                />
                 <button
                   type="button"
-                  onClick={loadCaptcha}
-                  disabled={captchaLoading}
-                  style={{ padding: '8px 12px', border: '1px solid #cbd5e1', borderRadius: 8, background: '#f8fafc', cursor: captchaLoading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-                  title="Refresh captcha"
+                  onClick={() => setShowPassword((v) => !v)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  <RefreshCw size={16} style={{ color: '#64748b' }} />
-                  <span style={{ fontSize: 12, color: '#64748b' }}>Refresh</span>
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <input
-                type="text"
-                value={captchaCode}
-                onChange={(e) => setCaptchaCode(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                placeholder="Enter captcha code"
-                required
-                autoComplete="off"
-                style={{ width: '100%', padding: '10px 12px', border: '1px solid #cbd5e1', borderRadius: 8, fontSize: 15, boxSizing: 'border-box', marginTop: 8 }}
-              />
             </div>
+
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" className="accent-sky-600" />
+                Remember me
+              </label>
+              <span className="hover:text-slate-700">Forgot password?</span>
+            </div>
+
             <button
               type="submit"
-              disabled={loading || captchaLoading}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                backgroundColor: '#2563eb',
-                color: '#fff',
-                border: 'none',
-                borderRadius: 8,
-                fontSize: 15,
-                fontWeight: 600,
-                cursor: loading || captchaLoading ? 'not-allowed' : 'pointer',
-                opacity: loading || captchaLoading ? 0.7 : 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-              }}
+              disabled={loading}
+              className="w-full mt-2 inline-flex items-center justify-center gap-3 px-4 py-2 bg-slate-900 text-white rounded-md font-semibold shadow hover:bg-slate-800 transition disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <LogIn size={20} strokeWidth={2} />
-              {loading ? 'Signing in…' : 'Login'}
+              <LogIn size={18} strokeWidth={2} />
+              {loading ? 'Signing in...' : 'Login'}
             </button>
           </form>
         </div>

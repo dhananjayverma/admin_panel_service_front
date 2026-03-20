@@ -29,8 +29,8 @@ export function AuthProvider({ children }) {
     loadUser();
   }, [loadUser]);
 
-  const login = async (email, password, captchaId, captchaCode) => {
-    const { token, user: u } = await api.auth.login(email, password, captchaId, captchaCode);
+  const login = async (email, password) => {
+    const { token, user: u } = await api.auth.login(email, password);
     localStorage.setItem('token', token);
     setUser(u);
     return u;

@@ -10,6 +10,7 @@ import { useToast } from '../../contexts/ToastContext';
 export default function AdminCredits() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [history, setHistory] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [amount, setAmount] = useState('');
   const [granting, setGranting] = useState(false);
@@ -17,7 +18,8 @@ export default function AdminCredits() {
   const router = useRouter();
   const toast = useToast();
 
-  const load = () => api.users.list().then((r) => setUsers(r.users || []));
+  const loadUsers = () => api.users.list().then((r) => setUsers(r.users || []));
+  const loadHistory = () => api.credits.history().then((r) => setHistory(r.list || []));
 
   useEffect(() => {
     if (!authLoading && (!user || user.role !== 'admin')) {
@@ -25,7 +27,12 @@ export default function AdminCredits() {
       return;
     }
     if (!user) return;
-    load().catch(() => setUsers([])).finally(() => setLoading(false));
+    Promise.all([loadUsers(), loadHistory()])
+      .catch(() => {
+        setUsers([]);
+        setHistory([]);
+      })
+      .finally(() => setLoading(false));
   }, [user, authLoading, router]);
 
   const handleGrant = async (e) => {
@@ -40,7 +47,7 @@ export default function AdminCredits() {
       toast.success('Credits granted');
       setAmount('');
       setSelectedUserId('');
-      await load();
+      await Promise.all([loadUsers(), loadHistory()]);
     } catch (err) {
       toast.error(err.message);
     } finally {
@@ -52,13 +59,21 @@ export default function AdminCredits() {
 
   const resellersAndClients = users.filter((u) => u.role === 'reseller' || u.role === 'client');
 
+  const formatDate = (d) => {
+    if (!d) return '-';
+    const dt = new Date(d);
+    return dt.toISOString().replace('T', ' ').slice(0, 19);
+  };
+
   return (
     <AdminLayout>
-      <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: '0 0 8px 0' }}>Credit Manage</h1>
-      <p style={{ fontSize: 14, color: '#64748b', marginBottom: 24 }}>Whatsapp Bulk / Management / Credit Manage</p>
+      <div style={{ marginBottom: 20 }}>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: '#0f172a' }}>Credit Management</h1>
+        <p style={{ margin: '4px 0 0', fontSize: 13, color: '#94a3b8' }}>Dashboard / Credit Management</p>
+      </div>
 
-      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 24, marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-        <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0f172a', margin: '0 0 16px 0' }}>Grant credits</h2>
+      <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', padding: 20, marginBottom: 24, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+        <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0f172a', margin: '0 0 12px 0' }}>Grant credits</h2>
         <form onSubmit={handleGrant} style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div>
             <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#64748b', marginBottom: 4 }}>User</label>
@@ -73,31 +88,48 @@ export default function AdminCredits() {
             <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#64748b', marginBottom: 4 }}>Amount</label>
             <input type="number" min="1" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Credits" style={{ padding: '8px 12px', border: '1px solid #e2e8f0', borderRadius: 8, fontSize: 14, width: 120 }} />
           </div>
-          <button type="submit" disabled={granting} style={{ background: '#059669', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{granting ? 'Granting…' : 'Grant'}</button>
+          <button type="submit" disabled={granting} style={{ background: '#059669', color: '#fff', border: 'none', padding: '8px 18px', borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>{granting ? 'Granting...' : 'Grant'}</button>
         </form>
       </div>
 
-      <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0f172a', margin: '0 0 12px 0' }}>Users & balance</h2>
-      {loading ? <LoadingSpinner /> : resellersAndClients.length === 0 ? <EmptyState message="No users yet." /> : (
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-              <tr>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Email</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Role</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: 12, fontWeight: 600, color: '#64748b', textTransform: 'uppercase' }}>Credit balance</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resellersAndClients.map((u) => (
-                <tr key={u._id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#0f172a' }}>{u.email}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{u.role}</td>
-                  <td style={{ padding: '12px 16px', fontSize: 14, color: '#475569' }}>{u.creditBalance ?? 0}</td>
+      {loading ? (
+        <LoadingSpinner />
+      ) : (
+        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 4px 14px rgba(0,0,0,0.06)' }}>
+          <div style={{ padding: '16px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+                <tr>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>ID</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>UserName</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Balance Type</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Balance</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Credit Date</th>
+                  <th style={{ padding: '12px 14px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Credit Note</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {history.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} style={{ padding: '16px 12px' }}>
+                      <EmptyState message="No credit transactions yet." />
+                    </td>
+                  </tr>
+                ) : (
+                  history.map((t) => (
+                    <tr key={t._id || t.createdAt} style={{ borderBottom: '1px solid #eef2f7' }}>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#0f172a' }}>{t._id || t.id || '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.userName || t.username || t.userEmail || '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.type || t.balanceType || '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.amount ?? t.balance ?? '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{formatDate(t.createdAt || t.creditDate)}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.note || t.creditNote || '-'}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </AdminLayout>
