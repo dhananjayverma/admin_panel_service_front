@@ -75,93 +75,125 @@ export default function AdminDashboard() {
     { label: 'Pending', value: data?.pendingCampaigns ?? 0, tone: 'rose', icon: Hourglass, hint: 'Waiting approval' },
   ];
 
+  const totalCredits = creditCards.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+
   return (
     <AdminLayout>
-      <div className="admin-dash-hero">
-        <div>
-          <h1 className="admin-dash-title">Admin Dashboard</h1>
-          <p className="admin-dash-breadcrumb">WhatsApp Bulk / Dashboard</p>
-        </div>
-        <div className="admin-dash-actions">
-          <button type="button" className="admin-primary-btn" onClick={() => setShowCreateModal(true)}>
-            Request Demo
-          </button>
-          <Link href="/admin/campaigns" className="admin-secondary-btn">
-            View Campaigns
-          </Link>
-        </div>
-      </div>
-
-      {loading ? (
-        <LoadingSpinner />
-      ) : (
-        <>
-          <section className="admin-dash-section">
-            <div className="admin-dash-section-head">
-              <div>
-                <h2 className="admin-dash-section-title">Credits Overview</h2>
-                <p className="admin-dash-section-sub">Quick balance snapshot across all credit pools.</p>
-              </div>
-              <span className="admin-dash-chip">Updated just now</span>
+      <div className="admin-dash-shell">
+        <div className="admin-dash-hero">
+          <div className="admin-dash-hero-main">
+            <p className="admin-dash-kicker">Admin Control</p>
+            <div>
+              <h1 className="admin-dash-title">Dashboard</h1>
+              <p className="admin-dash-subtitle">Track credits, campaign flow, and approvals in one glance.</p>
+              <p className="admin-dash-breadcrumb">WhatsApp Bulk / Dashboard</p>
             </div>
-            <div className="admin-dash-grid admin-dash-grid-4">
-              {creditCards.map(({ label, value, tone, icon: Icon }) => (
-                <div key={label} className={`admin-dash-card admin-dash-card-soft admin-dash-tone-${tone}`}>
-                  <div className="admin-dash-card-top">
-                    <div className="admin-dash-icon-bubble">
-                      <Icon size={18} />
-                    </div>
-                    <span className="admin-dash-card-label">{label}</span>
-                  </div>
-                  <div className="admin-dash-card-value">
-                    {typeof value === 'number' ? value.toLocaleString() : value}
-                  </div>
-                  <div className="admin-dash-card-footer">
-                    <span className="admin-dash-card-hint">Available credits</span>
-                    <button
-                      className="admin-dash-link"
-                      type="button"
-                      onClick={() => setShowCreateModal(true)}
-                    >
-                      Request Demo
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="admin-dash-section">
-            <div className="admin-dash-section-head">
-              <div>
-                <h2 className="admin-dash-section-title">Campaign Health</h2>
-                <p className="admin-dash-section-sub">Monitor running, pending, and lifetime campaigns.</p>
+            <div className="admin-dash-kpi-row">
+              <div className="admin-dash-kpi">
+                <p className="admin-dash-kpi-value">{totalCredits.toLocaleString()}</p>
+                <p className="admin-dash-kpi-label">Total Credits</p>
               </div>
-              <Link href="/admin/reports/campaigns" className="admin-dash-link">
-                View reports
+              <div className="admin-dash-kpi">
+                <p className="admin-dash-kpi-value">{(data?.inProcessCampaigns ?? 0).toLocaleString()}</p>
+                <p className="admin-dash-kpi-label">Active Campaigns</p>
+              </div>
+              <div className="admin-dash-kpi">
+                <p className="admin-dash-kpi-value">{(data?.pendingCampaigns ?? 0).toLocaleString()}</p>
+                <p className="admin-dash-kpi-label">Pending Approvals</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="admin-dash-hero-panel">
+            <div className="admin-dash-actions">
+              <button type="button" className="admin-primary-btn" onClick={() => setShowCreateModal(true)}>
+                Create Campaign
+              </button>
+              <Link href="/admin/campaigns" className="admin-secondary-btn">
+                View Campaigns
               </Link>
             </div>
-            <div className="admin-dash-grid admin-dash-grid-4">
-              {campaignCards.map(({ label, value, tone, icon: Icon, hint }) => (
-                <div key={label} className={`admin-dash-card admin-dash-card-solid admin-dash-tone-${tone}`}>
-                  <div className="admin-dash-card-top">
-                    <div className="admin-dash-icon-bubble">
-                      <Icon size={18} />
-                    </div>
-                    <span className="admin-dash-card-label">{label}</span>
-                  </div>
-                  <div className="admin-dash-card-value">
-                    {typeof value === 'number' ? value.toLocaleString() : value}
-                  </div>
-                  <div className="admin-dash-card-footer">
-                    <span className="admin-dash-card-hint">{hint}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="admin-dash-hero-meta">
+              <div>Last sync</div>
+              <strong>Just now</strong>
+              <Link href="/admin/reports/campaigns" className="admin-dash-hero-link">
+                Open campaign reports
+              </Link>
             </div>
-          </section>
-        </>
-      )}
+          </div>
+        </div>
+
+        {loading ? (
+          <LoadingSpinner />
+        ) : (
+          <>
+            <section className="admin-dash-section">
+              <div className="admin-dash-section-head">
+                <div>
+                  <h2 className="admin-dash-section-title">Credits Overview</h2>
+                  <p className="admin-dash-section-sub">Quick balance snapshot across all credit pools.</p>
+                </div>
+                <span className="admin-dash-chip">Live balance</span>
+              </div>
+              <div className="admin-dash-grid admin-dash-grid-4">
+                {creditCards.map(({ label, value, tone, icon: Icon }) => (
+                  <div key={label} className={`admin-dash-card admin-dash-card-soft admin-dash-tone-${tone}`}>
+                    <div className="admin-dash-card-top">
+                      <div className="admin-dash-icon-bubble">
+                        <Icon size={18} />
+                      </div>
+                      <span className="admin-dash-card-label">{label}</span>
+                    </div>
+                    <div className="admin-dash-card-value">
+                      {typeof value === 'number' ? value.toLocaleString() : value}
+                    </div>
+                    <div className="admin-dash-card-footer">
+                      <span className="admin-dash-card-hint">Available credits</span>
+                      <button
+                        className="admin-dash-link"
+                        type="button"
+                        onClick={() => setShowCreateModal(true)}
+                      >
+                        Create campaign
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="admin-dash-section">
+              <div className="admin-dash-section-head">
+                <div>
+                  <h2 className="admin-dash-section-title">Campaign Health</h2>
+                  <p className="admin-dash-section-sub">Monitor running, pending, and lifetime campaigns.</p>
+                </div>
+                <Link href="/admin/reports/campaigns" className="admin-dash-link">
+                  View reports
+                </Link>
+              </div>
+              <div className="admin-dash-grid admin-dash-grid-4">
+                {campaignCards.map(({ label, value, tone, icon: Icon, hint }) => (
+                  <div key={label} className={`admin-dash-card admin-dash-card-solid admin-dash-tone-${tone}`}>
+                    <div className="admin-dash-card-top">
+                      <div className="admin-dash-icon-bubble">
+                        <Icon size={18} />
+                      </div>
+                      <span className="admin-dash-card-label">{label}</span>
+                    </div>
+                    <div className="admin-dash-card-value">
+                      {typeof value === 'number' ? value.toLocaleString() : value}
+                    </div>
+                    <div className="admin-dash-card-footer">
+                      <span className="admin-dash-card-hint">{hint}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </>
+        )}
+      </div>
 
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
