@@ -66,7 +66,7 @@ export default function ResellerDemoRequests() {
   return (
     <ResellerLayout>
       <h1 className="text-2xl font-bold text-slate-800 mb-1">Demo Requests</h1>
-      <p className="text-slate-500 text-sm mb-6">Session: 9:30 AM – 6:00 PM (Sunday until 12 PM). Limit: 2 demos/day.</p>
+      <p className="text-slate-500 text-sm mb-6">Session Time Will Be From 9:30 AM to 6:00 PM. On Sunday It Will Be From 9:30 AM to 12 PM</p>
 
       {limits && (
         <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-6">

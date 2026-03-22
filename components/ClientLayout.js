@@ -52,7 +52,7 @@ export default function ClientLayout({ children }) {
         </div>
       </header>
       <div className="app-topbar">
-        Demo: 9:30 AM - 6:00 PM · 2 demos/day
+        Session Time Will Be From 9:30 AM to 6:00 PM. On Sunday It Will Be From 9:30 AM to 12 PM
       </div>
       <div className="app-body">
         <aside className="app-sidebar">
