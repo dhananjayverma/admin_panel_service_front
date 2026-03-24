@@ -6,7 +6,6 @@ import {
   Menu,
   LayoutDashboard,
   Megaphone,
-  Code,
   MessageCircle,
   FileText,
   BarChart3,
@@ -23,7 +22,6 @@ const BrandIcon = MessageCircle;
 
 const navSections = [
   { label: 'Campaigns', href: '/admin/campaigns', icon: Megaphone },
-  { label: 'API', href: '/admin/api', icon: Code },
   { label: 'Chatbot', href: '/admin/chatbot', icon: MessageCircle },
   {
     label: 'Reports',
@@ -141,7 +139,7 @@ export default function AdminLayout({ children }) {
           WhatsApp
         </Link>
         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.8)' }}>{user?.email}</span>
+          <span className="admin-header-email">{user?.email}</span>
         </div>
       </header>
 
@@ -162,6 +160,20 @@ export default function AdminLayout({ children }) {
 
       <div className={`admin-body`}>
         <aside className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`}>
+          <div className="admin-sidebar-head">
+            <div className="admin-sidebar-brand">
+              <BrandIcon size={20} strokeWidth={2} />
+              <div>
+                <div className="admin-sidebar-title">WhatsApp Admin</div>
+                <div className="admin-sidebar-sub">Control Center</div>
+              </div>
+            </div>
+            <div className="admin-sidebar-meta">
+              <span className="admin-sidebar-pill">Live</span>
+              <span className="admin-sidebar-pill alt">Secure</span>
+            </div>
+          </div>
+
           <nav className="admin-nav" aria-label="Admin menu">
             <NavLink href="/admin/dashboard" label="Dashboard" path={path} router={router} logout={logout} isHome />
             {navSections.map((section) =>
@@ -205,6 +217,12 @@ export default function AdminLayout({ children }) {
               )
             )}
           </nav>
+          <div className="admin-sidebar-footer">
+            <div className="admin-sidebar-user">
+              <div className="admin-sidebar-user-label">Signed in as</div>
+              <div className="admin-sidebar-user-email">{user?.email || 'admin'}</div>
+            </div>
+          </div>
         </aside>
         <main className="admin-main">{children}</main>
       </div>

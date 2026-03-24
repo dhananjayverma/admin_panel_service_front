@@ -4,6 +4,7 @@ import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 import { useRouter } from 'next/router';
 
 function EditModal({ user, onClose, onSaved }) {
@@ -84,6 +85,7 @@ export default function AdminUsers() {
   const [editUser, setEditUser] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
   const { user, loading: authLoading } = useAuth();
+  const toast = useToast();
   const router = useRouter();
 
   const load = async () => {
@@ -107,7 +109,7 @@ export default function AdminUsers() {
       setShowRegister(false);
       load();
     } catch (err) {
-      alert(err.message);
+      toast.error(err.message || 'Failed to register user');
     } finally {
       setRegLoading(false);
     }
@@ -119,7 +121,7 @@ export default function AdminUsers() {
       const r = await api.users.toggleActive(u._id);
       setUsers((prev) => prev.map((x) => x._id === u._id ? { ...x, isActive: r.user.isActive } : x));
     } catch (err) {
-      alert(err.message || 'Failed to toggle status');
+      toast.error(err.message || 'Failed to toggle status');
     } finally {
       setTogglingId(null);
     }

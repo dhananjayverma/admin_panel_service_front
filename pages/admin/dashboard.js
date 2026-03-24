@@ -3,6 +3,7 @@ import AdminLayout from '../../components/AdminLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { api } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import {
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const { user, loading: authLoading } = useAuth();
+  const toast = useToast();
   const router = useRouter();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [number, setNumber] = useState('');
@@ -44,10 +46,12 @@ export default function AdminDashboard() {
   const handleCreateCampaign = async () => {
     setSaving(true);
     try {
-      await api.campaigns.create({ name: number, messageBody: number, type: 'text' });
+      await api.campaigns.create({ name: number, messageBody: '', type: 'text' });
       setShowCreateModal(false);
       setShowSuccessModal(true);
       setNumber('');
+    } catch (err) {
+      toast.error(err.message || 'Failed to create campaign');
     } finally {
       setSaving(false);
     }

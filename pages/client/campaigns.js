@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import ClientLayout from '../../components/ClientLayout';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
@@ -122,7 +123,7 @@ export default function ClientCampaigns() {
                       {(c.status === 'running' || c.status === 'queued') && (
                         <button type="button" onClick={() => setConfirmAction({ type: 'pause', id: c._id, name: c.name })} className="client-link client-link-warn">Pause</button>
                       )}
-                      <a href={`/client/campaigns/${c._id}`} className="client-link client-link-slate">{c.status === 'draft' ? 'Edit / Add recipients' : 'View'}</a>
+                      <Link href={`/client/campaigns/${c._id}`} className="client-link client-link-slate">{c.status === 'draft' ? 'Edit / Add recipients' : 'View'}</Link>
                     </div>
                   </td>
                 </tr>

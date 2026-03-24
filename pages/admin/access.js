@@ -17,7 +17,6 @@ const CLIENT_SECTIONS = [
   { key: 'whatsapp_report', label: 'WhatsApp Report' },
   { key: 'my_campaigns', label: "My User's Campaigns" },
   { key: 'credits', label: 'Credits' },
-  { key: 'demo_requests', label: 'Demo Requests' },
 ];
 const RESELLER_SECTIONS = [
   { key: 'clients', label: 'Clients' },
@@ -25,7 +24,6 @@ const RESELLER_SECTIONS = [
   { key: 'campaigns', label: "User's Campaigns" },
   { key: 'analytics', label: 'Analytics' },
   { key: 'api', label: 'API' },
-  { key: 'demo_requests', label: 'Demo Requests' },
 ];
 const SECTIONS_BY_ROLE = { client: CLIENT_SECTIONS, reseller: RESELLER_SECTIONS };
 
@@ -98,10 +96,7 @@ export default function AdminAccess() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('reseller');
   const [resellerId, setResellerId] = useState('');
-  const [grantUserId, setGrantUserId] = useState('');
-  const [grantAmount, setGrantAmount] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [granting, setGranting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -143,26 +138,6 @@ export default function AdminAccess() {
     }
   };
 
-  const handleGrant = async (e) => {
-    e.preventDefault();
-    if (!grantUserId || !grantAmount || parseInt(grantAmount, 10) <= 0) {
-      toast.error('Select user and enter amount');
-      return;
-    }
-    setGranting(true);
-    try {
-      await api.credits.purchase(grantUserId, parseInt(grantAmount, 10));
-      setGrantUserId('');
-      setGrantAmount('');
-      load();
-      toast.success('Credits granted');
-    } catch (err) {
-      toast.error(err.message || 'Failed');
-    } finally {
-      setGranting(false);
-    }
-  };
-
   const handleSectionSave = async (userId, sections) => {
     try {
       await api.users.setSections(userId, sections);
@@ -184,7 +159,7 @@ export default function AdminAccess() {
     <AdminLayout>
       <div style={{ marginBottom: 20 }}>
         <h1 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', margin: 0 }}>Access Management</h1>
-        <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Manage users, grant credits, and control section access per user.</p>
+        <p style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>Manage users and control section access per user.</p>
       </div>
 
       {/* Page tabs */}
@@ -324,32 +299,6 @@ export default function AdminAccess() {
         </div>
       )}
 
-      {/* Grant credits — only on users tab */}
-      {pageTab === 'users' && <div style={{ ...cardStyle, marginTop: 24 }}>
-        <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 600, color: '#0f172a', margin: 0 }}>Grant Credits</h2>
-          <p style={{ fontSize: 13, color: '#64748b', marginTop: 4 }}>Grant credits to a reseller or client. They can then run campaigns.</p>
-        </div>
-        <form onSubmit={handleGrant} style={{ padding: 20, display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'flex-end' }}>
-          <div style={{ minWidth: 200 }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#64748b', marginBottom: 4 }}>User</label>
-            <select value={grantUserId} onChange={(e) => setGrantUserId(e.target.value)} style={{ ...inputStyle, minWidth: 220 }} required>
-              <option value="">Select user</option>
-              {resellers.map((r) => (
-                <option key={r._id} value={r._id}>{r.email} (Reseller)</option>
-              ))}
-              {clients.map((c) => (
-                <option key={c._id} value={c._id}>{c.email} (Client)</option>
-              ))}
-            </select>
-          </div>
-          <div style={{ minWidth: 120 }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 500, color: '#64748b', marginBottom: 4 }}>Amount</label>
-            <input type="number" min="1" placeholder="Credits" value={grantAmount} onChange={(e) => setGrantAmount(e.target.value)} style={{ ...inputStyle, minWidth: 100 }} required />
-          </div>
-          <button type="submit" disabled={granting} style={btnPrimary}>Grant Credits</button>
-        </form>
-      </div>}
     </AdminLayout>
   );
 }

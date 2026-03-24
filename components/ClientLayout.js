@@ -14,10 +14,9 @@ const nav = [
   { href: '/client/chatbot', label: 'Chatbot', section: 'chatbot' },
   { href: '/client/whatsapp-report', label: 'WhatsApp Report', section: 'whatsapp_report' },
   { href: '/client/campaigns', label: "My User's Campaigns", section: 'my_campaigns' },
-  { href: '/client/credits', label: 'Credit History', section: 'credits' },
   { href: '/client/credits', label: 'Credit Manage', section: 'credits' },
   { href: '/client/whatsapp-login', label: 'My WhatsApp', section: null },
-  { href: '/client/demo-requests', label: 'Demo Requests', section: 'demo_requests' },
+  { href: '/client/demo-requests', label: 'Demo Requests', section: null },
   { href: '/client/profile', label: 'Profile', section: null },
 ];
 
@@ -51,13 +50,16 @@ export default function ClientLayout({ children }) {
           <button type="button" onClick={() => { logout(); router.push('/login'); }} style={{ background: 'transparent', border: 'none', color: '#fca5a5', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>Logout</button>
         </div>
       </header>
-      <div className="app-topbar">
-        Session Time Will Be From 9:30 AM to 6:00 PM. On Sunday It Will Be From 9:30 AM to 12 PM
+      <div className="app-topbar" aria-live="polite">
+        <div className="app-marquee" role="presentation">
+          <span>Session Time Will Be From 9:30 AM to 6:00 PM. On Sunday It Will Be From 9:30 AM to 12 PM</span>
+        </div>
       </div>
       <div className="app-body">
         <aside className="app-sidebar">
           <nav className="app-nav">
             <div className="app-nav-title">Client Panel</div>
+            <div className="app-nav-heading">Navigation</div>
             {visibleNav.map(({ href, label, activeWhen }, i) => (
               <Link
                 key={`${href}-${label}-${i}`}

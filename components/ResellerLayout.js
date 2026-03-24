@@ -9,7 +9,7 @@ const nav = [
   { href: '/reseller/campaigns', label: "My User's Campaigns", section: 'campaigns' },
   { href: '/reseller/analytics', label: 'Analytics', section: 'analytics' },
   { href: '/reseller/api', label: 'API', section: 'api' },
-  { href: '/reseller/demo-requests', label: 'Demo Requests', section: 'demo_requests' },
+  { href: '/reseller/demo-requests', label: 'Demo Requests', section: null },
   { href: '/reseller/profile', label: 'Profile', section: null },
 ];
 
@@ -41,6 +41,7 @@ export default function ResellerLayout({ children }) {
         <aside className="app-sidebar">
           <nav className="app-nav">
             <div className="app-nav-title">Reseller Panel</div>
+            <div className="app-nav-heading">Navigation</div>
             {visibleNav.map(({ href, label }) => (
               <Link key={`${href}-${label}`} href={href} className={`app-nav-link${path === href ? ' active' : ''}`}>
                 {label}

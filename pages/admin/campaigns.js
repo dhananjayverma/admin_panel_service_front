@@ -115,7 +115,7 @@ export default function AdminCampaigns() {
     load();
     connectSSE();
     return () => { if (esRef.current) { esRef.current.close(); esRef.current = null; } };
-  }, [user]);
+  }, [user, load, connectSSE]);
 
   const startCampaign = async (id) => {
     setConfirmAction(null);

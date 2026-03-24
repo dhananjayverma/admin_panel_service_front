@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
-import { Space_Grotesk, DM_Sans } from 'next/font/google';
 import { useAuth } from '../contexts/AuthContext';
 import { MessageCircle, LogIn, ShieldCheck, Zap, BarChart3, Eye, EyeOff, Sparkles, ArrowRight } from 'lucide-react';
-
-const headingFont = Space_Grotesk({ subsets: ['latin'], weight: ['500', '600', '700'] });
-const bodyFont = DM_Sans({ subsets: ['latin'], weight: ['400', '500', '600'] });
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -39,7 +35,7 @@ export default function Login() {
   };
 
   return (
-    <div className={`${bodyFont.className} min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-950`}>
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-950">
       {/* Left: brand + value */}
       <div className="relative hidden lg:flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-linear-to-br from-slate-950 via-slate-900 to-slate-800" />
@@ -58,7 +54,7 @@ export default function Login() {
             </div>
             <div>
               <div className="text-xs uppercase tracking-[0.4em] text-slate-300">WhatsApp Bulk</div>
-              <div className={`${headingFont.className} text-3xl font-semibold`}>Campaigns that feel personal</div>
+              <div className="text-3xl font-semibold">Campaigns that feel personal</div>
             </div>
           </div>
 
@@ -111,7 +107,7 @@ export default function Login() {
               <div className="h-11 w-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow">
                 <MessageCircle size={20} strokeWidth={2} />
               </div>
-              <h2 className={`${headingFont.className} text-2xl font-semibold text-slate-900 m-0`}>Welcome back</h2>
+              <h2 className="text-2xl font-semibold text-slate-900 m-0">Welcome back</h2>
             </div>
             <p className="text-sm text-slate-600">Sign in to continue to your dashboard</p>
           </div>

@@ -119,7 +119,7 @@ export default function AdminCredits() {
                   history.map((t) => (
                     <tr key={t._id || t.createdAt} style={{ borderBottom: '1px solid #eef2f7' }}>
                       <td style={{ padding: '12px 14px', fontSize: 14, color: '#0f172a' }}>{t._id || t.id || '-'}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.userName || t.username || t.userEmail || '-'}</td>
+                      <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.userId?.email || t.userName || t.userEmail || '-'}</td>
                       <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.type || t.balanceType || '-'}</td>
                       <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{t.amount ?? t.balance ?? '-'}</td>
                       <td style={{ padding: '12px 14px', fontSize: 14, color: '#475569' }}>{formatDate(t.createdAt || t.creditDate)}</td>

@@ -6,7 +6,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { useRouter } from 'next/router';
 
-const API_BASE = typeof window !== 'undefined' ? (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api') : '';
+const API_BASE = typeof window !== 'undefined' ? `${process.env.NEXT_PUBLIC_API_URL}/api` : '';
 
 export default function APIPage() {
   const router = useRouter();

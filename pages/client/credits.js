@@ -84,7 +84,7 @@ export default function ClientCredits() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('credit');
   const [modalCreditType, setModalCreditType] = useState(null);
-  const { user, loading: authLoading, refresh } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -93,12 +93,11 @@ export default function ClientCredits() {
       return;
     }
     if (!user) return;
-    refresh();
     api.credits.history()
       .then((r) => setHistory(r.list || []))
       .catch(() => setHistory([]))
       .finally(() => setLoading(false));
-  }, [user, authLoading, router, refresh]);
+  }, [user, authLoading, router]);
 
   if (authLoading || !user) return <LoadingSpinner />;
 

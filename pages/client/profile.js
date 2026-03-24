@@ -73,7 +73,7 @@ export default function ClientProfile() {
     if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
     setSaving(true);
     try {
-      await api.users.update(user._id, { password: newPassword });
+      await api.auth.changePassword(oldPassword, newPassword);
       toast.success('Password changed successfully');
       setOldPassword(''); setNewPassword(''); setConfirmPassword('');
     } catch (err) {
@@ -155,6 +155,17 @@ export default function ClientProfile() {
             </div>
             <div style={s.cardBody}>
               <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={s.label}>Current Password</label>
+                  <div style={{ position: 'relative' }}>
+                    <input type={showOld ? 'text' : 'password'} value={oldPassword} onChange={(e) => setOldPassword(e.target.value)}
+                      placeholder="Enter current password" style={{ ...s.input, paddingRight: 38 }} required />
+                    <button type="button" tabIndex={-1} onClick={() => setShowOld(v => !v)}
+                      style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0, display: 'flex' }}>
+                      {showOld ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
                 <div>
                   <label style={s.label}>New Password</label>
                   <div style={{ position: 'relative' }}>

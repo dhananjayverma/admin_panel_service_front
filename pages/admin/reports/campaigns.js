@@ -42,6 +42,22 @@ export default function AdminReportCampaigns() {
     return Array.from(set);
   }, [campaigns]);
 
+  const filtered = useMemo(() => {
+    return campaigns.filter((c) => {
+      const userName = c.userName || c.ownerName || c.user?.email || c.userId?.email || '';
+      if (selectedUser && userName !== selectedUser) return false;
+      if (startDate) {
+        const created = c.createdAt ? new Date(c.createdAt) : null;
+        if (!created || created < new Date(startDate)) return false;
+      }
+      if (endDate) {
+        const created = c.createdAt ? new Date(c.createdAt) : null;
+        if (!created || created > new Date(endDate + 'T23:59:59')) return false;
+      }
+      return true;
+    });
+  }, [campaigns, selectedUser, startDate, endDate]);
+
   return (
     <AdminLayout>
       <form
@@ -103,14 +119,14 @@ export default function AdminReportCampaigns() {
                 </tr>
               </thead>
               <tbody>
-                {campaigns.length === 0 ? (
+                {filtered.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="admin-report-empty">
                       <EmptyState message="No campaigns." />
                     </td>
                   </tr>
                 ) : (
-                  campaigns.map((c, index) => (
+                  filtered.map((c, index) => (
                     <tr key={c._id}>
                       <td>{index + 1}</td>
                       <td>{c.userName || c.ownerName || c.user?.email || '-'}</td>

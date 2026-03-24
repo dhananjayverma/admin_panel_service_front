@@ -34,110 +34,74 @@ export default function AdminReportWhatsApp() {
 
   return (
     <AdminLayout>
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 18,
-          padding: '18px 16px',
-          background: '#fff',
-          borderRadius: 10,
-          border: '1px solid #e5e7eb',
-          boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
-          marginBottom: 24,
-        }}
-      >
-        <label style={{ fontSize: 16, color: '#0f172a' }}>
-          Start
-          <input
-            type="date"
-            value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            style={{
-              marginLeft: 12,
-              padding: '10px 14px',
-              borderRadius: 6,
-              border: '1px solid #d1d5db',
-              minWidth: 220,
-              fontSize: 14,
-            }}
-          />
-        </label>
-        <label style={{ fontSize: 16, color: '#0f172a' }}>
-          End
-          <input
-            type="date"
-            value={endDate}
-            onChange={(e) => setEndDate(e.target.value)}
-            style={{
-              marginLeft: 12,
-              padding: '10px 14px',
-              borderRadius: 6,
-              border: '1px solid #d1d5db',
-              minWidth: 220,
-              fontSize: 14,
-            }}
-          />
-        </label>
-        <button
-          type="submit"
-          style={{
-            background: '#2d3fa5',
-            color: '#fff',
-            border: 'none',
-            borderRadius: 6,
-            padding: '10px 22px',
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: 'pointer',
-            boxShadow: '0 1px 2px rgba(0,0,0,0.12)',
-          }}
-        >
-          Submit
-        </button>
-      </form>
-      {loading ? <LoadingSpinner /> : (
-        <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e5e7eb', overflow: 'hidden', boxShadow: '0 4px 14px rgba(0,0,0,0.08)' }}>
-          <div style={{ padding: '18px 20px 8px', fontSize: 16, color: '#0f172a' }}>
-            It&apos;ll available for the next 60 days only. If we will be informed within 12 hours
+      <div className="admin-report-shell">
+        <div className="admin-report-head">
+          <div>
+            <p className="admin-report-kicker">WhatsApp Report</p>
+            <h1 className="admin-report-title">Campaign Reports</h1>
+            <p className="admin-report-subtitle">Filter by date range and download campaign reports.</p>
           </div>
-          <div style={{ padding: '0 16px 18px' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e5e7eb' }}>
+          <div className="admin-report-note">
+            Reports are available for the next 60 days. We will be informed within 12 hours.
+          </div>
+        </div>
+
+        <form className="admin-report-filters" onSubmit={handleSubmit}>
+          <label className="admin-report-field">
+            <span>Start date</span>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+            />
+          </label>
+          <label className="admin-report-field">
+            <span>End date</span>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+            />
+          </label>
+          <button type="submit" className="admin-report-submit-btn">Apply Filters</button>
+        </form>
+      </div>
+      {loading ? <LoadingSpinner /> : (
+        <div className="admin-report-card">
+          <div className="admin-report-table-wrap">
+            <table className="admin-report-table">
+              <thead>
                 <tr>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>ID</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>User Name</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Campaign Name</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Number Count</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Campaign List</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Type</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>T&amp;C</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Campaign Submit</th>
-                  <th style={{ padding: '10px 12px', textAlign: 'left', fontSize: 13, fontWeight: 700, color: '#334155' }}>Campaign Report</th>
+                  <th>ID</th>
+                  <th>User Name</th>
+                  <th>Campaign Name</th>
+                  <th>Number Count</th>
+                  <th>Campaign List</th>
+                  <th>Type</th>
+                  <th>T&amp;C</th>
+                  <th>Campaign Submit</th>
+                  <th>Campaign Report</th>
                 </tr>
               </thead>
               <tbody>
                 {campaigns.length === 0 ? (
                   <tr>
-                    <td colSpan={9} style={{ padding: '16px 12px' }}>
+                    <td colSpan={9} className="admin-report-empty">
                       <EmptyState message="No campaigns." />
                     </td>
                   </tr>
                 ) : (
                   campaigns.map((c, index) => (
-                    <tr key={c._id} style={{ borderBottom: '1px solid #eef2f7' }}>
-                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#0f172a' }}>{index + 1}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.userName || c.ownerName || '-'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#0f172a' }}>{c.name || '-'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.numberCount ?? c.totalNumbers ?? '-'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.listName || c.campaignList || '-'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.type || '-'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.termsAccepted ? 'Yes' : '-'}</td>
-                      <td style={{ padding: '10px 12px', fontSize: 13, color: '#475569' }}>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-'}</td>
-                      <td style={{ padding: '10px 12px' }}>
+                    <tr key={c._id}>
+                      <td>{index + 1}</td>
+                      <td>{c.userName || c.ownerName || '-'}</td>
+                      <td>{c.name || '-'}</td>
+                      <td>{c.numberCount ?? c.totalNumbers ?? '-'}</td>
+                      <td>{c.listName || c.campaignList || '-'}</td>
+                      <td>{c.type || '-'}</td>
+                      <td>{c.termsAccepted ? 'Yes' : '-'}</td>
+                      <td>{c.createdAt ? new Date(c.createdAt).toLocaleDateString() : '-'}</td>
+                      <td>
                         <button
                           type="button"
                           disabled={exporting === c._id}
@@ -152,7 +116,7 @@ export default function AdminReportWhatsApp() {
                               setExporting(null);
                             }
                           }}
-                          style={{ fontSize: 13, color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer' }}
+                          className="admin-report-link"
                         >
                           {exporting === c._id ? '...' : 'View'}
                         </button>
